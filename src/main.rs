@@ -40,6 +40,8 @@ pub enum AgentTarget {
     Windsurf,
     /// Cline / Roo Code (VS Code)
     Cline,
+    /// Swival CLI agent
+    Swival,
 }
 
 #[derive(Parser)]
@@ -1609,10 +1611,12 @@ fn run_cli() -> Result<i32> {
             copilot,
         } => {
             if show {
-                hooks::init::show_config(codex)?;
+                let swival = agent == Some(AgentTarget::Swival);
+                hooks::init::show_config(codex, swival, global)?;
             } else if uninstall {
                 let cursor = agent == Some(AgentTarget::Cursor);
-                hooks::init::uninstall(global, gemini, codex, cursor, cli.verbose)?;
+                let swival = agent == Some(AgentTarget::Swival);
+                hooks::init::uninstall(global, gemini, codex, cursor, swival, cli.verbose)?;
             } else if gemini {
                 let patch_mode = if auto_patch {
                     hooks::init::PatchMode::Auto
@@ -1624,6 +1628,8 @@ fn run_cli() -> Result<i32> {
                 hooks::init::run_gemini(global, hook_only, patch_mode, cli.verbose)?;
             } else if copilot {
                 hooks::init::run_copilot(cli.verbose)?;
+            } else if agent == Some(AgentTarget::Swival) {
+                hooks::init::run_swival(global, cli.verbose)?;
             } else {
                 let install_opencode = opencode;
                 let install_claude = !opencode;
